@@ -7,11 +7,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy to Railway
-        uses: bervProject/railway-deploy@main
         with:
-          railway_token: ${{ secrets.RAILWAY_TOKEN }}
-          service: omniagent-backend
+          fetch-depth: 0
+      - name: Deploy to Hugging Face Spaces
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          cd backend
+          git init
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add .
+          git commit -m "Deploy from GitHub Actions"
+          git push --force https://Jyotiraditya21-bug:${HF_TOKEN}@huggingface.co/spaces/Jyotiraditya21-bug/omniagent-backend main
   deploy-frontend:
     runs-on: ubuntu-latest
     steps:

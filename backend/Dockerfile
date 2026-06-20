@@ -15,7 +15,7 @@ RUN uv sync --frozen
 COPY . .
 
 # Expose backend port
-EXPOSE 8000
+EXPOSE 7860
 
 # Execute server
-CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]

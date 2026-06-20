@@ -152,6 +152,33 @@ omniagent run "Research top AI model sizes and write them in a table"
 3. Click **Load unpacked** in the top left.
 4. Select the `extension/` directory.
 
+
+---
+
+## Deployment
+
+### Backend: Hugging Face Spaces (Docker Space)
+
+The backend is deployed to Hugging Face Spaces using the Docker SDK. The deploy workflow automatically pushes the `backend/` directory contents to Hugging Face Spaces.
+
+To configure deployment:
+1. Create a Hugging Face Space of type **Docker** (select **Blank** or **Docker** template).
+2. Set the following environment variables (Secrets) in your Hugging Face Space settings:
+   - `SUPABASE_URL`
+   - `SUPABASE_KEY`
+   - `GOOGLE_CLIENT_ID`
+   - `GOOGLE_CLIENT_SECRET`
+   - `JWT_SECRET`
+   - `ENCRYPTION_SECRET` (A 32-byte url-safe encryption key)
+3. Generate a Hugging Face User Access Token with Write permissions (`HF_TOKEN`) and add it to your GitHub repository secrets as `HF_TOKEN`.
+
+### Frontend: Vercel
+
+The frontend is deployed to Vercel. Set up the following secrets in your GitHub Action settings to enable automated deployment:
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
+
 ---
 
 ## API Endpoints
