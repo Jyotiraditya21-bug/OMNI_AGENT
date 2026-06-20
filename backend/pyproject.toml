@@ -1,0 +1,31 @@
+[project]
+name = "omniagent-backend"
+version = "1.0.0"
+description = "FastAPI backend for OmniAgent Universal AI Assistant"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "langgraph",
+    "langchain-groq",
+    "langchain-community",
+    "langchain-core",
+    "tavily-python",
+    "chromadb",
+    "sentence-transformers",
+    "supabase",
+    "cryptography",
+    "httpx",
+    "beautifulsoup4",
+    "pandas",
+    "matplotlib",
+    "python-jose[cryptography]",
+    "google-auth",
+    "google-auth-oauthlib",
+    "python-multipart",
+    "sse-starlette",
+    "python-dotenv",
+    "typer",
+    "rich"
+]

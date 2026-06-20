@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>OmniAgent Sidepanel</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header class="panel-header">
+      <div class="brand">
+        <span class="logo">●</span>
+        <h2>OmniAgent</h2>
+      </div>
+      <p class="subtitle">Selected Web Context Worker</p>
+    </header>
+
+    <main class="panel-body">
+      <!-- Input Workspace -->
+      <div class="section">
+        <label for="taskInput" class="section-label">Instruction Task</label>
+        <textarea id="taskInput" placeholder="Highlight text on a page or type a custom command here..."></textarea>
+        <button id="runBtn" class="btn btn-primary">Run Agent Swarm</button>
+      </div>
+
+      <!-- Output Workspace -->
+      <div class="section flex-grow">
+        <label class="section-label">Execution Live Stream</label>
+        <div id="outputContainer" class="console-box">
+          <span class="info-text">Input task and run to view orchestrator steps...</span>
+        </div>
+      </div>
+
+      <!-- Configurations -->
+      <details class="config-drawer">
+        <summary class="config-summary">Settings & Backend Server</summary>
+        <div class="config-content">
+          <div class="field">
+            <label for="jwtInput">Authentication JWT Token</label>
+            <input type="password" id="jwtInput" placeholder="Paste login token (Bearer JWT)">
+          </div>
+          <div class="field">
+            <label for="backendInput">FastAPI Backend URL</label>
+            <input type="text" id="backendInput" value="http://localhost:8000">
+          </div>
+        </div>
+      </details>
+    </main>
+  </div>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>

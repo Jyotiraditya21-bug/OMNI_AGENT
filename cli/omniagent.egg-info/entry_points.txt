@@ -1,0 +1,2 @@
+[console_scripts]
+omniagent = omniagent.cli:app

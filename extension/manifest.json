@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "OmniAgent",
+  "version": "1.0.0",
+  "description": "Send any selected text to OmniAgent for AI processing",
+  "permissions": ["contextMenus", "storage", "sidePanel", "activeTab"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "action": {
+    "default_title": "OmniAgent"
+  }
+}

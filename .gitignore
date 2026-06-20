@@ -1,0 +1,22 @@
+# Environments & Secrets
+.env
+backend/.env
+cli/.env
+venv/
+.venv/
+env/
+__pycache__/
+*.pyc
+
+# Local Databases & Embeddings
+backend/chroma_db/
+chroma_db/
+
+# Node Package Managers
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+
+# macOS / OS files
+.DS_Store

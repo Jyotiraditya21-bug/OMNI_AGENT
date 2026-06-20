@@ -1,0 +1,15 @@
+[project]
+name = "omniagent"
+version = "1.0.0"
+description = "CLI tool for OmniAgent Universal AI Assistant"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "typer",
+    "rich",
+    "httpx",
+    "python-dotenv"
+]
+
+[project.scripts]
+omniagent = "omniagent.cli:app"
