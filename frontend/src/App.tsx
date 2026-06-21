@@ -146,14 +146,14 @@ export default function App() {
               opacity: Math.max(0, 1 - scrollProgress * 4.5),
               transform: `translateY(${-scrollProgress * 300}px) scale(${1 + scrollProgress * 0.05})`,
             }}
-            className="text-center transition-all duration-75 flex flex-col items-center justify-center"
+            className="text-center flex flex-col items-center justify-center"
           >
             <span className="text-[10px] font-mono tracking-[0.3em] text-zinc-650 uppercase font-semibold block">
               // UNIVERSAL ORCHESTRATOR
             </span>
             <div className="h-6" />
             <h1 
-              className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-zinc-500 uppercase select-none transition-all duration-75 whitespace-nowrap"
+              className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-zinc-500 uppercase select-none whitespace-nowrap"
               style={{ 
                 letterSpacing: `${0.15 + Math.min(1, scrollProgress * 4.5) * maxLetterSpacing}rem`,
                 marginRight: `-${0.15 + Math.min(1, scrollProgress * 4.5) * maxLetterSpacing}rem`
@@ -326,10 +326,10 @@ export default function App() {
           >
             Integrity
           </span>
-          <div className="w-[1px] h-32 bg-zinc-900 relative">
+          <div className="w-[1.5px] h-32 bg-zinc-900/80 relative">
             <div 
-              className="w-[1px] bg-white absolute top-0 transition-all duration-150" 
-              style={{ height: `${Math.min(100, scrollProgress * 100)}%` }}
+              className="w-[2.5px] h-8 bg-zinc-200 absolute left-[-0.5px] top-0 rounded-full" 
+              style={{ transform: `translateY(${Math.min(1, Math.max(0, scrollProgress)) * 96}px)` }}
             />
           </div>
           <span className="text-xs font-mono text-zinc-400">
