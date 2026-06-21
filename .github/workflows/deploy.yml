@@ -20,17 +20,4 @@ jobs:
           git add .
           git commit -m "Deploy from GitHub Actions"
           git push --force https://jimmy2110:${HF_TOKEN}@huggingface.co/spaces/jimmy2110/omniagent-backend HEAD:main
-  deploy-frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: cd frontend && npm install && npm run build
-      - uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: frontend
+
