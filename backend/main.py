@@ -1,3 +1,4 @@
+# Trigger rebuild to clear stuck Hugging Face build queue
 import asyncio
 import json
 import uuid
