@@ -2,7 +2,7 @@
 title: OmniAgent Backend
 emoji: 🧠
 colorFrom: gray
-colorTo: zinc
+colorTo: gray
 sdk: docker
 app_port: 7860
 ---
