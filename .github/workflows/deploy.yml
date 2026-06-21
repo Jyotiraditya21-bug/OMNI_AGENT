@@ -9,6 +9,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Debug secret presence
+        run: |
+          if [ -z "${{ secrets.HF_TOKEN }}" ]; then
+            echo "HF_TOKEN is EMPTY"
+          else
+            echo "HF_TOKEN is SET"
+          fi
       - name: Deploy to Hugging Face Spaces
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
