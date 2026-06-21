@@ -15,12 +15,11 @@ jobs:
         run: |
           cd backend
           git init
-          git branch -M main
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add .
           git commit -m "Deploy from GitHub Actions"
-          git push --force https://jimmy2110:${HF_TOKEN}@huggingface.co/spaces/jimmy2110/omniagent-backend main
+          git push --force https://jimmy2110:${HF_TOKEN}@huggingface.co/spaces/jimmy2110/omniagent-backend HEAD:main
   deploy-frontend:
     runs-on: ubuntu-latest
     steps:
