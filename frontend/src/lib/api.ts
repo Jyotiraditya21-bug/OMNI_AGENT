@@ -1,7 +1,21 @@
 import { User, Session } from '../types'
 
-// Resolve backend URL
-export const API_BASE = (import.meta.env.VITE_BACKEND_URL as string) || 'http://localhost:8000'
+// Resolve backend URL with auto-detection for production
+const getBackendUrl = (): string => {
+  const envUrl = import.meta.env.VITE_BACKEND_URL as string
+  if (envUrl) return envUrl
+
+  // Auto-detect environment if VITE_BACKEND_URL is not set
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      return 'https://jimmy2110-omniagent-backend.hf.space'
+    }
+  }
+  return 'http://localhost:8000'
+}
+
+export const API_BASE = getBackendUrl()
 
 export function getAccessToken(): string | null {
   return localStorage.getItem('omniagent_token')
