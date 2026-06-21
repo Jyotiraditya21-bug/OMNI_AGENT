@@ -194,14 +194,14 @@ export default function App() {
           <div className="max-w-xl mx-auto px-6 py-20 relative z-10">
             
             {/* Spacer Section 1: Reserved for the Title */}
-            <div className="h-[140vh] flex items-end justify-center pb-8">
+            <div className="h-[100vh] flex items-end justify-center pb-8">
               <span className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest animate-bounce">
                 ↓ Scroll to initialize system nodes
               </span>
             </div>
 
             {/* Section 2: Intro / Entry */}
-            <div className="h-[120vh] flex flex-col justify-center space-y-4">
+            <div className="h-[75vh] flex flex-col justify-center space-y-4">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-mono tracking-widest text-zinc-600 uppercase font-semibold">// 01 / System Entry</span>
                 <span className="h-[1px] w-12 bg-zinc-900" />
@@ -215,7 +215,7 @@ export default function App() {
             </div>
 
             {/* Section 3: Agent Swarm */}
-            <div className="h-[140vh] flex flex-col justify-center space-y-4">
+            <div className="h-[95vh] flex flex-col justify-center space-y-4">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-mono tracking-widest text-zinc-600 uppercase font-semibold">// 02 / Autonomous Swarm</span>
                 <span className="h-[1px] w-12 bg-zinc-900" />
@@ -245,7 +245,7 @@ export default function App() {
             </div>
 
             {/* Section 4: Semantic Vector Memory */}
-            <div className="h-[120vh] flex flex-col justify-center space-y-4">
+            <div className="h-[75vh] flex flex-col justify-center space-y-4">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-mono tracking-widest text-zinc-600 uppercase font-semibold">// 03 / Memory Layer</span>
                 <span className="h-[1px] w-12 bg-zinc-900" />
@@ -259,7 +259,7 @@ export default function App() {
             </div>
 
             {/* Section 5: Technical Metrics */}
-            <div className="h-[120vh] flex flex-col justify-center space-y-6">
+            <div className="h-[80vh] flex flex-col justify-center space-y-6">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-mono tracking-widest text-zinc-600 uppercase font-semibold">// 04 / Technical Metrics</span>
                 <span className="h-[1px] w-12 bg-zinc-900" />
@@ -309,7 +309,7 @@ export default function App() {
             </div>
 
             {/* Section 6: Security Shield */}
-            <div className="h-[120vh] flex flex-col justify-center space-y-4">
+            <div className="h-[75vh] flex flex-col justify-center space-y-4">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-mono tracking-widest text-zinc-600 uppercase font-semibold">// 05 / Security Shield</span>
                 <span className="h-[1px] w-12 bg-zinc-900" />
@@ -323,7 +323,7 @@ export default function App() {
             </div>
 
             {/* Section 7: End / Integrated Login Console Card */}
-            <div className="h-[100vh] flex flex-col justify-center items-center">
+            <div className="h-[90vh] flex flex-col justify-center items-center">
               <div className="w-full max-w-md bg-zinc-900/40 border border-zinc-900 rounded-2xl p-8 space-y-6 text-center shadow-xl backdrop-blur-sm">
                 <div className="bg-zinc-950 p-4 rounded-full w-fit mx-auto text-zinc-500 border border-zinc-900 shadow-xl">
                   <SettingsIcon size={32} className="animate-spin duration-3000" />
@@ -362,18 +362,28 @@ export default function App() {
             </div>
 
             {/* Minimal High-Fashion Footer */}
-            <div className="pt-16 pb-8 border-t border-zinc-900/60 mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 text-[9px] font-mono text-zinc-600 uppercase tracking-widest">
+            <div className="pt-16 pb-8 border-t border-zinc-900/60 mt-12 flex flex-col items-center gap-4 text-[9px] font-mono text-zinc-600 uppercase tracking-widest text-center">
               <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-                <span>© 2026 OMNIAGENT</span>
+                <span>© 2026 OMNI-AGENT</span>
                 <span className="text-zinc-800">|</span>
-                <span>All Rights Reserved</span>
+                <span>Made by Jyotiraditya</span>
                 <span className="text-zinc-800">|</span>
-                <span>Distributed Swarm Console</span>
+                <a 
+                  href="https://github.com/Jyotiraditya21-bug/OMNI_AGENT" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:text-zinc-400 transition"
+                >
+                  GitHub Repository
+                </a>
               </div>
               <div className="flex items-center gap-4">
                 <span>v0.4.0-Beta</span>
                 <span className="text-zinc-800">|</span>
                 <span className="animate-pulse">Secure Link Active</span>
+              </div>
+              <div className="text-[8px] text-zinc-700 pt-2 lowercase">
+                location // ahmedabad
               </div>
             </div>
 
