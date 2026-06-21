@@ -6,7 +6,7 @@ WORKDIR /app
 RUN pip install --no-cache-dir uv
 
 # Copy project specification files
-COPY pyproject.toml .
+COPY pyproject.toml uv.lock ./
 
 # Sync dependencies using uv
 RUN uv sync --frozen
