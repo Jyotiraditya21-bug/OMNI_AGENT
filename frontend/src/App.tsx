@@ -18,6 +18,7 @@ export default function App() {
 
   const [scrollProgress, setScrollProgress] = useState(0)
   const [maxLetterSpacing, setMaxLetterSpacing] = useState(1.8)
+  const [activeSection, setActiveSection] = useState(0)
 
   useEffect(() => {
     const updateSpacing = () => {
@@ -33,6 +34,38 @@ export default function App() {
     window.addEventListener('resize', updateSpacing)
     return () => window.removeEventListener('resize', updateSpacing)
   }, [])
+
+  // Intersection Observer to track the centered onboarding section
+  useEffect(() => {
+    if (user) return
+
+    const observerOptions = {
+      root: null,
+      rootMargin: '-30% 0px -30% 0px',
+      threshold: 0.1
+    }
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const index = parseInt(entry.target.getAttribute('data-index') || '0', 10)
+          setActiveSection(index)
+        }
+      })
+    }
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions)
+    
+    const timer = setTimeout(() => {
+      const elements = document.querySelectorAll('[data-onboarding-section]')
+      elements.forEach(el => observer.observe(el))
+    }, 100)
+
+    return () => {
+      clearTimeout(timer)
+      observer.disconnect()
+    }
+  }, [user])
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const el = e.currentTarget
@@ -129,11 +162,12 @@ export default function App() {
     run(task, googleToken)
   }
 
-  const logoOpacity = scrollProgress < 0.2
-    ? 1 - scrollProgress * 4.5
-    : scrollProgress < 0.8
-      ? 0.1
-      : Math.max(0, 0.1 - (scrollProgress - 0.8) * 0.5);
+  let logoOpacity = 0.08
+  if (scrollProgress < 0.2) {
+    logoOpacity = 1.0 - (scrollProgress / 0.2) * 0.92
+  } else if (scrollProgress > 0.65) {
+    logoOpacity = Math.max(0, 0.08 - ((scrollProgress - 0.65) / 0.13) * 0.08)
+  }
 
   const logoLetterSpacing = 0.15 + Math.min(1, scrollProgress * 4.5) * maxLetterSpacing;
 
@@ -151,7 +185,7 @@ export default function App() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.012)_0%,transparent_80%)] pointer-events-none" />
 
         {/* Center Title - Full Screen Transition */}
-        <div className="fixed inset-0 flex flex-col items-center justify-center pointer-events-none z-20">
+        <div className="fixed inset-0 flex flex-col items-center justify-center pointer-events-none z-0">
           <div 
             style={{
               opacity: logoOpacity,
@@ -194,137 +228,217 @@ export default function App() {
           <div className="max-w-xl mx-auto px-6 py-20 relative z-10">
             
             {/* Spacer Section 1: Reserved for the Title */}
-            <div className="h-[100vh] flex items-end justify-center pb-8">
-              <span className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest animate-bounce">
+            <div 
+              data-onboarding-section
+              data-index="0"
+              className="h-[100vh] flex items-end justify-center pb-8"
+            >
+              <span className="text-[10px] font-mono text-zinc-655 uppercase tracking-widest animate-bounce">
                 ↓ Scroll to initialize system nodes
               </span>
             </div>
 
             {/* Section 2: Intro / Entry */}
-            <div className="h-[75vh] flex flex-col justify-center space-y-4">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono tracking-widest text-zinc-600 uppercase font-semibold">// 01 / System Entry</span>
-                <span className="h-[1px] w-12 bg-zinc-900" />
+            <div 
+              data-onboarding-section
+              data-index="1"
+              className="h-[75vh] flex flex-col justify-center items-center"
+            >
+              <div className={`border p-8 rounded-2xl shadow-2xl backdrop-blur-md space-y-4 max-w-md w-full transition-all duration-700 ease-in-out ${
+                activeSection === 1 
+                  ? 'border-zinc-800/80 bg-zinc-950/95 opacity-100 scale-100 filter-none shadow-[0_0_50px_-12px_rgba(255,255,255,0.06)]' 
+                  : 'border-zinc-950/20 bg-zinc-950/80 opacity-15 scale-95 blur-[1px] pointer-events-none'
+              }`}>
+                <div className="flex items-center gap-2">
+                  <span className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${
+                    activeSection === 1 ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse' : 'bg-zinc-700'
+                  }`} />
+                  <span className="text-[10px] font-mono tracking-widest text-zinc-600 uppercase font-semibold">// 01 / System Entry</span>
+                  <span className="h-[1px] w-12 bg-zinc-900" />
+                </div>
+                <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-300 uppercase font-sans">
+                  Universal AI Assistant
+                </h2>
+                <p className="text-sm text-zinc-400 leading-relaxed font-sans">
+                  A single control interface that orchestrates 7 parallel autonomous sub-agent nodes running on a LangGraph state machine. Booting environment...
+                </p>
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-300 uppercase font-sans">
-                Universal AI Assistant
-              </h2>
-              <p className="text-sm text-zinc-400 leading-relaxed font-sans max-w-md">
-                A single control interface that orchestrates 7 parallel autonomous sub-agent nodes running on a LangGraph state machine. Booting environment...
-              </p>
             </div>
 
             {/* Section 3: Agent Swarm */}
-            <div className="h-[95vh] flex flex-col justify-center space-y-4">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono tracking-widest text-zinc-600 uppercase font-semibold">// 02 / Autonomous Swarm</span>
-                <span className="h-[1px] w-12 bg-zinc-900" />
-              </div>
-              <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-300 uppercase">
-                Parallel Sub-Agents
-              </h2>
-              <p className="text-sm text-zinc-400 leading-relaxed max-w-md">
-                Task requests are dynamically decomposed, routing commands to specialized worker nodes operating in parallel to minimize response latency.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
-                {[
-                  { name: 'Research Node', desc: 'Tavily search' },
-                  { name: 'Sandbox Code', desc: 'Secure execution' },
-                  { name: 'Web Scraper', desc: 'Structure extraction' },
-                  { name: 'Data Analyst', desc: 'Pandas & charts' },
-                  { name: 'Gmail API', desc: 'Mail control' },
-                  { name: 'Calendar API', desc: 'Scheduling' },
-                  { name: 'Drive API', desc: 'Docs management' }
-                ].map(agent => (
-                  <div key={agent.name} className="border border-zinc-900 bg-zinc-900/30 p-2.5 rounded-lg flex flex-col gap-0.5">
-                    <span className="text-xs font-mono text-zinc-300 font-semibold">■ {agent.name}</span>
-                    <span className="text-[10px] font-mono text-zinc-500">{agent.desc}</span>
-                  </div>
-                ))}
+            <div 
+              data-onboarding-section
+              data-index="2"
+              className="h-[95vh] flex flex-col justify-center items-center"
+            >
+              <div className={`border p-8 rounded-2xl shadow-2xl backdrop-blur-md space-y-4 max-w-md w-full transition-all duration-700 ease-in-out ${
+                activeSection === 2 
+                  ? 'border-zinc-800/80 bg-zinc-950/95 opacity-100 scale-100 filter-none shadow-[0_0_50px_-12px_rgba(255,255,255,0.06)]' 
+                  : 'border-zinc-950/20 bg-zinc-950/80 opacity-15 scale-95 blur-[1px] pointer-events-none'
+              }`}>
+                <div className="flex items-center gap-2">
+                  <span className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${
+                    activeSection === 2 ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse' : 'bg-zinc-700'
+                  }`} />
+                  <span className="text-[10px] font-mono tracking-widest text-zinc-600 uppercase font-semibold">// 02 / Autonomous Swarm</span>
+                  <span className="h-[1px] w-12 bg-zinc-900" />
+                </div>
+                <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-300 uppercase">
+                  Parallel Sub-Agents
+                </h2>
+                <p className="text-sm text-zinc-400 leading-relaxed">
+                  Task requests are dynamically decomposed, routing commands to specialized worker nodes operating in parallel to minimize response latency.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+                  {[
+                    { name: 'Research Node', desc: 'Tavily search' },
+                    { name: 'Sandbox Code', desc: 'Secure execution' },
+                    { name: 'Web Scraper', desc: 'Structure extraction' },
+                    { name: 'Data Analyst', desc: 'Pandas & charts' },
+                    { name: 'Gmail API', desc: 'Mail control' },
+                    { name: 'Calendar API', desc: 'Scheduling' },
+                    { name: 'Drive API', desc: 'Docs management' }
+                  ].map(agent => (
+                    <div 
+                      key={agent.name} 
+                      className={`border border-zinc-900 bg-zinc-900/30 p-2.5 rounded-lg flex flex-col gap-0.5 hover:border-zinc-800/60 hover:bg-zinc-900/30 transition-all duration-300 ${
+                        agent.name === 'Drive API' ? 'sm:col-span-2' : ''
+                      }`}
+                    >
+                      <span className="text-xs font-mono text-zinc-300 font-semibold">■ {agent.name}</span>
+                      <span className="text-[10px] font-mono text-zinc-500">{agent.desc}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
             {/* Section 4: Semantic Vector Memory */}
-            <div className="h-[75vh] flex flex-col justify-center space-y-4">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono tracking-widest text-zinc-600 uppercase font-semibold">// 03 / Memory Layer</span>
-                <span className="h-[1px] w-12 bg-zinc-900" />
+            <div 
+              data-onboarding-section
+              data-index="3"
+              className="h-[75vh] flex flex-col justify-center items-center"
+            >
+              <div className={`border p-8 rounded-2xl shadow-2xl backdrop-blur-md space-y-4 max-w-md w-full transition-all duration-700 ease-in-out ${
+                activeSection === 3 
+                  ? 'border-zinc-800/80 bg-zinc-950/95 opacity-100 scale-100 filter-none shadow-[0_0_50px_-12px_rgba(255,255,255,0.06)]' 
+                  : 'border-zinc-950/20 bg-zinc-950/80 opacity-15 scale-95 blur-[1px] pointer-events-none'
+              }`}>
+                <div className="flex items-center gap-2">
+                  <span className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${
+                    activeSection === 3 ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse' : 'bg-zinc-700'
+                  }`} />
+                  <span className="text-[10px] font-mono tracking-widest text-zinc-600 uppercase font-semibold">// 03 / Memory Layer</span>
+                  <span className="h-[1px] w-12 bg-zinc-900" />
+                </div>
+                <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-300 uppercase">
+                  ChromaDB Integration
+                </h2>
+                <p className="text-sm text-zinc-400 leading-relaxed">
+                  Maintains system context across operations by embedding execution history with sentence-transformers and searching relevant vectors.
+                </p>
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-300 uppercase">
-                ChromaDB Integration
-              </h2>
-              <p className="text-sm text-zinc-400 leading-relaxed max-w-md">
-                Maintains system context across operations by embedding execution history with sentence-transformers and searching relevant vectors.
-              </p>
             </div>
 
             {/* Section 5: Technical Metrics */}
-            <div className="h-[80vh] flex flex-col justify-center space-y-6">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono tracking-widest text-zinc-600 uppercase font-semibold">// 04 / Technical Metrics</span>
-                <span className="h-[1px] w-12 bg-zinc-900" />
-              </div>
-              <div className="space-y-2">
+            <div 
+              data-onboarding-section
+              data-index="4"
+              className="h-[80vh] flex flex-col justify-center items-center"
+            >
+              <div className={`border p-8 rounded-2xl shadow-2xl backdrop-blur-md space-y-4 max-w-md w-full transition-all duration-700 ease-in-out ${
+                activeSection === 4 
+                  ? 'border-zinc-800/80 bg-zinc-950/95 opacity-100 scale-100 filter-none shadow-[0_0_50px_-12px_rgba(255,255,255,0.06)]' 
+                  : 'border-zinc-950/20 bg-zinc-950/80 opacity-15 scale-95 blur-[1px] pointer-events-none'
+              }`}>
+                <div className="flex items-center gap-2">
+                  <span className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${
+                    activeSection === 4 ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse' : 'bg-zinc-700'
+                  }`} />
+                  <span className="text-[10px] font-mono tracking-widest text-zinc-600 uppercase font-semibold">// 04 / Technical Metrics</span>
+                  <span className="h-[1px] w-12 bg-zinc-900" />
+                </div>
                 <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-300 uppercase">
                   Performance Gains
                 </h2>
-                <p className="text-sm text-zinc-400 leading-relaxed max-w-md">
+                <p className="text-sm text-zinc-400 leading-relaxed">
                   Re-engineered layout components and parallel agent routing, leading to zero-overhead execution latency.
                 </p>
-              </div>
-              
-              <div className="border border-zinc-900 rounded-xl overflow-hidden bg-zinc-950/40 backdrop-blur-sm max-w-md">
-                <table className="w-full text-left border-collapse text-xs font-mono">
-                  <thead>
-                    <tr className="border-b border-zinc-900 bg-zinc-900/20 text-zinc-500 uppercase tracking-widest text-[9px]">
-                      <th className="p-3">Area</th>
-                      <th className="p-3">Before</th>
-                      <th className="p-3">After</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-900 text-zinc-400">
-                    <tr>
-                      <td className="p-3 font-semibold text-zinc-300">Render Lag</td>
-                      <td className="p-3">~120ms</td>
-                      <td className="p-3 text-zinc-200">0ms (60fps)</td>
-                    </tr>
-                    <tr>
-                      <td className="p-3 font-semibold text-zinc-300">Swarm Execution</td>
-                      <td className="p-3">Sequential</td>
-                      <td className="p-3 text-zinc-200">Parallel (-65%)</td>
-                    </tr>
-                    <tr>
-                      <td className="p-3 font-semibold text-zinc-300">Edge TTFB</td>
-                      <td className="p-3">~180ms</td>
-                      <td className="p-3 text-zinc-200">&lt;10ms (CDN)</td>
-                    </tr>
-                    <tr>
-                      <td className="p-3 font-semibold text-zinc-300">Security Layer</td>
-                      <td className="p-3">Plaintext</td>
-                      <td className="p-3 text-zinc-200">Fernet Crypt</td>
-                    </tr>
-                  </tbody>
-                </table>
+                
+                <div className="border border-zinc-900 rounded-xl overflow-hidden bg-zinc-950/40 backdrop-blur-sm">
+                  <table className="w-full text-left border-collapse text-xs font-mono">
+                    <thead>
+                      <tr className="border-b border-zinc-900 bg-zinc-900/20 text-zinc-500 uppercase tracking-widest text-[9px]">
+                        <th className="p-3">Area</th>
+                        <th className="p-3">Before</th>
+                        <th className="p-3">After</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-900 text-zinc-400">
+                      <tr className="hover:bg-zinc-900/20 transition-colors">
+                        <td className="p-3 font-semibold text-zinc-300">Render Lag</td>
+                        <td className="p-3">~120ms</td>
+                        <td className="p-3 text-emerald-400 font-semibold">0ms (60fps)</td>
+                      </tr>
+                      <tr className="hover:bg-zinc-900/20 transition-colors">
+                        <td className="p-3 font-semibold text-zinc-300">Swarm Execution</td>
+                        <td className="p-3">Sequential</td>
+                        <td className="p-3 text-emerald-400 font-semibold">Parallel (-65%)</td>
+                      </tr>
+                      <tr className="hover:bg-zinc-900/20 transition-colors">
+                        <td className="p-3 font-semibold text-zinc-300">Edge TTFB</td>
+                        <td className="p-3">~180ms</td>
+                        <td className="p-3 text-emerald-400 font-semibold">&lt;10ms (CDN)</td>
+                      </tr>
+                      <tr className="hover:bg-zinc-900/20 transition-colors">
+                        <td className="p-3 font-semibold text-zinc-300">Security Layer</td>
+                        <td className="p-3">Plaintext</td>
+                        <td className="p-3 text-emerald-400 font-semibold">Fernet Crypt</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
 
             {/* Section 6: Security Shield */}
-            <div className="h-[75vh] flex flex-col justify-center space-y-4">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono tracking-widest text-zinc-600 uppercase font-semibold">// 05 / Security Shield</span>
-                <span className="h-[1px] w-12 bg-zinc-900" />
+            <div 
+              data-onboarding-section
+              data-index="5"
+              className="h-[75vh] flex flex-col justify-center items-center"
+            >
+              <div className={`border p-8 rounded-2xl shadow-2xl backdrop-blur-md space-y-4 max-w-md w-full transition-all duration-700 ease-in-out ${
+                activeSection === 5 
+                  ? 'border-zinc-800/80 bg-zinc-950/95 opacity-100 scale-100 filter-none shadow-[0_0_50px_-12px_rgba(255,255,255,0.06)]' 
+                  : 'border-zinc-950/20 bg-zinc-950/80 opacity-15 scale-95 blur-[1px] pointer-events-none'
+              }`}>
+                <div className="flex items-center gap-2">
+                  <span className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${
+                    activeSection === 5 ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse' : 'bg-zinc-700'
+                  }`} />
+                  <span className="text-[10px] font-mono tracking-widest text-zinc-600 uppercase font-semibold">// 05 / Security Shield</span>
+                  <span className="h-[1px] w-12 bg-zinc-900" />
+                </div>
+                <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-300 uppercase">
+                  Symmetric Encryption
+                </h2>
+                <p className="text-sm text-zinc-400 leading-relaxed">
+                  Bring Your Own Key (BYOK) system keys are encrypted with Fernet prior to database writes. Decrypted solely during execution.
+                </p>
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-300 uppercase">
-                Symmetric Encryption
-              </h2>
-              <p className="text-sm text-zinc-400 leading-relaxed max-w-md">
-                Bring Your Own Key (BYOK) system keys are encrypted with Fernet prior to database writes. Decrypted solely during execution.
-              </p>
             </div>
 
             {/* Section 7: End / Integrated Login Console Card */}
-            <div className="h-[90vh] flex flex-col justify-center items-center">
-              <div className="w-full max-w-md bg-zinc-900/40 border border-zinc-900 rounded-2xl p-8 space-y-6 text-center shadow-xl backdrop-blur-sm">
+            <div 
+              data-onboarding-section
+              data-index="6"
+              className="h-[90vh] flex flex-col justify-center items-center"
+            >
+              <div className={`w-full max-w-md border rounded-2xl p-8 space-y-6 text-center shadow-xl backdrop-blur-sm transition-all duration-700 ease-in-out ${
+                activeSection === 6 
+                  ? 'border-zinc-800 bg-zinc-950/95 opacity-100 scale-100 filter-none shadow-[0_0_50px_-12px_rgba(255,255,255,0.06)]' 
+                  : 'border-zinc-950/20 bg-zinc-950/80 opacity-15 scale-95 blur-[1px] pointer-events-none'
+              }`}>
                 <div className="bg-zinc-950 p-4 rounded-full w-fit mx-auto text-zinc-500 border border-zinc-900 shadow-xl">
                   <SettingsIcon size={32} className="animate-spin duration-3000" />
                 </div>
