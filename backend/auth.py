@@ -1,4 +1,6 @@
 from datetime import datetime, timedelta
+import urllib.request
+import json
 from fastapi import Header, HTTPException, status
 from jose import jwt, JWTError
 from google.oauth2 import id_token
@@ -7,7 +9,7 @@ from config import GOOGLE_CLIENT_ID, JWT_SECRET, ALGORITHM, supabase
 
 def verify_google_token(token: str) -> dict:
     """
-    Verifies a Google OAuth ID token.
+    Verifies a Google OAuth token (either ID token or Access token).
     If the token is valid, returns user details: google_id, email, name, avatar_url.
     If token starts with 'mock_', bypasses verification for local testing purposes.
     """
@@ -23,20 +25,45 @@ def verify_google_token(token: str) -> dict:
             "avatar_url": f"https://api.dicebear.com/7.x/adventurer/svg?seed={name}"
         }
         
-    try:
-        # Verify the ID token using Google API
-        idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
-        return {
-            "google_id": idinfo["sub"],
-            "email": idinfo["email"],
-            "name": idinfo.get("name", ""),
-            "avatar_url": idinfo.get("picture", "")
-        }
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Google OAuth token verification failed: {e}"
-        )
+    # Detect if it's a JWT (ID Token) or an Access Token
+    # JWTs always have 3 parts separated by dots
+    if len(token.split(".")) == 3:
+        try:
+            # Verify the ID token using Google API
+            idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
+            return {
+                "google_id": idinfo["sub"],
+                "email": idinfo["email"],
+                "name": idinfo.get("name", ""),
+                "avatar_url": idinfo.get("picture", "")
+            }
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Google OAuth ID token verification failed: {e}"
+            )
+    else:
+        # Verify as an Access Token via the Google userinfo endpoint
+        try:
+            url = f"https://www.googleapis.com/oauth2/v3/userinfo?access_token={token}"
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=5) as response:
+                user_info = json.loads(response.read().decode("utf-8"))
+            
+            if "email" not in user_info:
+                raise ValueError("Token does not have email scope or is invalid.")
+                
+            return {
+                "google_id": user_info["sub"],
+                "email": user_info["email"],
+                "name": user_info.get("name", ""),
+                "avatar_url": user_info.get("picture", "")
+            }
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Google OAuth Access token verification failed: {e}"
+            )
 
 def get_or_create_user(user_info: dict) -> dict:
     """
