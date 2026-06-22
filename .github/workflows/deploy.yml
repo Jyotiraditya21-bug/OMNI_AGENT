@@ -42,12 +42,6 @@ jobs:
           npm ci
           npm run build
 
-      - name: Add CNAME file to build output
-        run: |
-          if [ -f CNAME ]; then
-            cp CNAME frontend/dist/
-          fi
-
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:

@@ -10,7 +10,7 @@
 ```
 
 
-Live Workspace: https://omni-agent-94t.pages.dev
+Live Workspace: https://jyotiraditya21-bug.github.io/OMNI_AGENT/
 
 OmniAgent is an enterprise-grade autonomous assistant platform designed to orchestrate complex workflows through parallel agent execution. Powered by a central LangGraph state controller, OmniAgent decomposes user requests into discrete tasks, dispatches them to a network of specialized agent nodes, and streams real-time execution feedback via Server-Sent Events.
 
