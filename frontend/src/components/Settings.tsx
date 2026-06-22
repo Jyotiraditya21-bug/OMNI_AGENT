@@ -7,9 +7,19 @@ interface SettingsProps {
   user: UserType
   onClose: () => void
   onSignOut: () => void
+  googleToken: string
+  onConnectGoogle: () => void
+  onDisconnectGoogle: () => void
 }
 
-export function Settings({ user, onClose, onSignOut }: SettingsProps) {
+export function Settings({ 
+  user, 
+  onClose, 
+  onSignOut,
+  googleToken,
+  onConnectGoogle,
+  onDisconnectGoogle
+}: SettingsProps) {
   const [groqKey, setGroqKey] = useState('')
   const [tavilyKey, setTavilyKey] = useState('')
   const [showGroq, setShowGroq] = useState(false)
@@ -89,6 +99,40 @@ export function Settings({ user, onClose, onSignOut }: SettingsProps) {
               <LogOut size={13} />
               Sign Out
             </button>
+          </div>
+
+          {/* Google Integration Section */}
+          <div className="border border-zinc-900 bg-zinc-900/10 p-4 rounded-xl space-y-3">
+            <div className="flex items-center gap-2 text-zinc-100">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+              <h3 className="text-xs font-bold uppercase tracking-wider">Google Workspace Integration</h3>
+            </div>
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              Authorize OmniAgent to run tasks involving Google Calendar, Drive, and Gmail.
+            </p>
+            {googleToken ? (
+              <div className="flex items-center justify-between gap-3 bg-emerald-950/20 border border-emerald-900/50 p-2.5 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-xs font-semibold text-emerald-400">Connected to Google</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={onDisconnectGoogle}
+                  className="px-2.5 py-1.5 bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 hover:text-rose-450 text-zinc-400 rounded-lg text-[10px] font-bold transition font-mono"
+                >
+                  DISCONNECT
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={onConnectGoogle}
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-bold rounded-xl text-xs transition shadow-md"
+              >
+                Connect Google Account
+              </button>
+            )}
           </div>
 
           {/* BYOK Section */}

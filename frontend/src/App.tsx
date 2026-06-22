@@ -12,13 +12,65 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   const [currentSessionId, setCurrentSessionId] = useState<string | undefined>()
-  const [googleToken, setGoogleToken] = useState<string>('')
+  const [googleToken, setGoogleToken] = useState<string>(() => {
+    return localStorage.getItem('omniagent_google_token') || ''
+  })
+  const [isBooting, setIsBooting] = useState(false)
   
   const { messages, agentStatuses, isLoading, run, setMessages } = useSSE()
 
   const [scrollProgress, setScrollProgress] = useState(0)
   const [maxLetterSpacing, setMaxLetterSpacing] = useState(1.8)
   const [activeSection, setActiveSection] = useState(0)
+
+  const handleSetGoogleToken = (token: string) => {
+    setGoogleToken(token)
+    if (token) {
+      localStorage.setItem('omniagent_google_token', token)
+    } else {
+      localStorage.removeItem('omniagent_google_token')
+    }
+  }
+
+  async function handleMockLogin() {
+    if (isBooting) return
+    setIsBooting(true)
+    try {
+      const mockToken = 'mock_developer_' + Math.random().toString(36).substring(7)
+      const data = await loginWithGoogle(mockToken)
+      setUser(data.user)
+      handleSetGoogleToken(mockToken)
+    } catch (err) {
+      console.warn('Mock authentication backend error, performing local fallback login:', err)
+      // Fallback to local sandbox session to keep workspace fully accessible offline/without database
+      setUser({
+        id: '11111111-1111-1111-1111-111111111111',
+        email: 'developer@example.com',
+        name: 'Developer Sandbox',
+        avatar_url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Developer'
+      })
+    } finally {
+      setIsBooting(false)
+    }
+  }
+
+  function handleRealGoogleLogin() {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'your_google_client_id'
+    const redirectUri = window.location.origin
+    const scope = 'openid email profile https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/drive.file'
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}&include_granted_scopes=true`
+    window.location.href = authUrl
+  }
+
+  function handleSignOut() {
+    clearAccessToken()
+    setUser(null)
+    setMessages([])
+    setCurrentSessionId(undefined)
+    setScrollProgress(0)
+    setIsBooting(false)
+    handleSetGoogleToken('')
+  }
 
   useEffect(() => {
     const updateSpacing = () => {
@@ -71,6 +123,11 @@ export default function App() {
     const el = e.currentTarget
     const pct = el.scrollTop / (el.scrollHeight - el.clientHeight)
     setScrollProgress(pct)
+
+    // Automatically trigger Sandbox Login when reaching the bottom (pct >= 0.98)
+    if (!user && !isBooting && pct >= 0.98) {
+      handleMockLogin()
+    }
   }
 
   // Restore session token on load
@@ -96,45 +153,26 @@ export default function App() {
       
       const targetToken = accessToken || idToken
       if (targetToken) {
-        setGoogleToken(targetToken)
-        loginWithGoogle(targetToken)
-          .then((res) => {
-            setUser(res.user)
-            window.location.hash = ''
-          })
-          .catch((err) => {
-            console.error('Google authorization synchronization failed:', err)
-          })
+        const backendToken = getAccessToken()
+        if (backendToken) {
+          handleSetGoogleToken(targetToken)
+          window.location.hash = ''
+        } else {
+          loginWithGoogle(targetToken)
+            .then((res) => {
+              setUser(res.user)
+              handleSetGoogleToken(targetToken)
+              window.location.hash = ''
+            })
+            .catch((err) => {
+              console.error('Google authorization synchronization failed, falling back to Sandbox Mode:', err)
+              handleMockLogin()
+              window.location.hash = ''
+            })
+        }
       }
     }
   }, [])
-
-  const handleMockLogin = async () => {
-    try {
-      const mockToken = 'mock_developer_' + Math.random().toString(36).substring(7)
-      const data = await loginWithGoogle(mockToken)
-      setUser(data.user)
-      setGoogleToken(mockToken)
-    } catch (err) {
-      console.error('Mock authentication failed:', err)
-    }
-  }
-
-  const handleRealGoogleLogin = () => {
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'your_google_client_id'
-    const redirectUri = window.location.origin
-    const scope = 'openid email profile https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/drive.file'
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}&include_granted_scopes=true`
-    window.location.href = authUrl
-  }
-
-  const handleSignOut = () => {
-    clearAccessToken()
-    setUser(null)
-    setMessages([])
-    setCurrentSessionId(undefined)
-    setScrollProgress(0)
-  }
 
   const handleSelectSession = (session: Session) => {
     setCurrentSessionId(session.id)
@@ -231,10 +269,18 @@ export default function App() {
             <div 
               data-onboarding-section
               data-index="0"
-              className="h-[100vh] flex items-end justify-center pb-8"
+              className="h-[100vh] flex flex-col justify-end items-center pb-12 gap-5"
             >
-              <span className="text-[10px] font-mono text-zinc-655 uppercase tracking-widest animate-bounce">
-                ↓ Scroll to initialize system nodes
+              <button
+                onClick={handleMockLogin}
+                className="flex items-center gap-2 px-6 py-3 bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-bold rounded-xl text-sm shadow-xl shadow-zinc-100/5 transition pointer-events-auto"
+              >
+                <LogIn size={15} />
+                Launch Workspace (Sandbox)
+              </button>
+              
+              <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest animate-bounce">
+                ↓ Or scroll to explore features
               </span>
             </div>
 
@@ -565,6 +611,9 @@ export default function App() {
             user={user}
             onClose={() => setShowSettings(false)}
             onSignOut={handleSignOut}
+            googleToken={googleToken}
+            onConnectGoogle={handleRealGoogleLogin}
+            onDisconnectGoogle={() => handleSetGoogleToken('')}
           />
         )}
       </div>

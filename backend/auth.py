@@ -69,8 +69,10 @@ def get_or_create_user(user_info: dict) -> dict:
     """
     Upserts user info into Supabase users table based on google_id.
     """
-    if not supabase:
-        # Development fallback if Supabase URL is not configured
+    # If the user is a mock developer, bypass Supabase synchronization to make sandbox robust
+    is_mock = user_info["google_id"].startswith("google_mock_") or user_info["google_id"] == "google_developer_id"
+    if is_mock or not supabase:
+        # Development / Sandbox fallback
         return {
             "id": "11111111-1111-1111-1111-111111111111",
             "google_id": user_info["google_id"],
