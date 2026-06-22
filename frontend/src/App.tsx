@@ -16,7 +16,6 @@ export default function App() {
     return localStorage.getItem('omniagent_google_token') || ''
   })
   const [isBooting, setIsBooting] = useState(false)
-  const [hasTriggeredAutoLogin, setHasTriggeredAutoLogin] = useState(false)
   
   const { messages, agentStatuses, isLoading, run, setMessages } = useSSE()
 
@@ -70,7 +69,6 @@ export default function App() {
     setCurrentSessionId(undefined)
     setScrollProgress(0)
     setIsBooting(false)
-    setHasTriggeredAutoLogin(false)
     handleSetGoogleToken('')
   }
 
@@ -125,14 +123,6 @@ export default function App() {
     const el = e.currentTarget
     const pct = el.scrollTop / (el.scrollHeight - el.clientHeight)
     setScrollProgress(pct)
-
-    // Automatically trigger Sandbox Login when reaching the bottom (pct >= 0.99) with a smooth delay
-    if (!user && !hasTriggeredAutoLogin && pct >= 0.99) {
-      setHasTriggeredAutoLogin(true)
-      setTimeout(() => {
-        handleMockLogin()
-      }, 900)
-    }
   }
 
   // Restore session token on load
@@ -277,18 +267,10 @@ export default function App() {
             <div 
               data-onboarding-section
               data-index="0"
-              className="h-[100vh] flex flex-col justify-end items-center pb-12 gap-5"
+              className="h-[100vh] flex items-end justify-center pb-8"
             >
-              <button
-                onClick={handleMockLogin}
-                className="flex items-center gap-2 px-6 py-3 bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-bold rounded-xl text-sm shadow-xl shadow-zinc-100/5 transition pointer-events-auto"
-              >
-                <LogIn size={15} />
-                Launch Workspace (Sandbox)
-              </button>
-              
-              <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest animate-bounce">
-                ↓ Or scroll to explore features
+              <span className="text-[10px] font-mono text-zinc-650 uppercase tracking-widest animate-bounce">
+                ↓ Scroll to initialize system nodes
               </span>
             </div>
 
