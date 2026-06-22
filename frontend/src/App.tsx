@@ -16,6 +16,7 @@ export default function App() {
     return localStorage.getItem('omniagent_google_token') || ''
   })
   const [isBooting, setIsBooting] = useState(false)
+  const [hasTriggeredAutoLogin, setHasTriggeredAutoLogin] = useState(false)
   
   const { messages, agentStatuses, isLoading, run, setMessages } = useSSE()
 
@@ -69,6 +70,7 @@ export default function App() {
     setCurrentSessionId(undefined)
     setScrollProgress(0)
     setIsBooting(false)
+    setHasTriggeredAutoLogin(false)
     handleSetGoogleToken('')
   }
 
@@ -124,9 +126,12 @@ export default function App() {
     const pct = el.scrollTop / (el.scrollHeight - el.clientHeight)
     setScrollProgress(pct)
 
-    // Automatically trigger Sandbox Login when reaching the bottom (pct >= 0.98)
-    if (!user && !isBooting && pct >= 0.98) {
-      handleMockLogin()
+    // Automatically trigger Sandbox Login when reaching the bottom (pct >= 0.99) with a smooth delay
+    if (!user && !hasTriggeredAutoLogin && pct >= 0.99) {
+      setHasTriggeredAutoLogin(true)
+      setTimeout(() => {
+        handleMockLogin()
+      }, 900)
     }
   }
 
@@ -213,9 +218,12 @@ export default function App() {
     <div className="relative w-screen h-screen bg-zinc-950 text-zinc-100 font-sans overflow-hidden">
       
       {/* 1. Onboarding & Boot Interface (Rendered and transitioned out when user logged in) */}
-      <div className={`absolute inset-0 transition-all duration-700 ease-in-out z-20 ${
-        user ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'
-      }`}>
+      <div 
+        style={{ transitionDuration: '1800ms', transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
+        className={`absolute inset-0 transition-all z-20 ${
+          user ? 'opacity-0 scale-[0.93] blur-sm pointer-events-none' : 'opacity-100 scale-100'
+        }`}
+      >
         {/* Static checked grid background */}
         <div className="static-grid-bg" />
 
@@ -498,19 +506,37 @@ export default function App() {
                   </p>
                 </div>
                 
-                <div className="space-y-3 pt-2">
-                  <button
-                    onClick={handleMockLogin}
-                    className="w-full flex items-center justify-center gap-2 py-3 bg-zinc-950 border border-zinc-800 hover:bg-zinc-900 text-zinc-450 font-semibold rounded-xl text-sm transition"
-                  >
-                    <LogIn size={16} />
-                    Developer Sandbox Account
-                  </button>
+                <div className="space-y-5 pt-2 text-left">
+                  {/* Developer Sandbox Box Option */}
+                  <div className="border border-zinc-900 bg-zinc-900/35 p-5 rounded-2xl space-y-3 shadow-inner hover:border-zinc-800 transition duration-300">
+                    <div className="flex items-center gap-2 text-zinc-350">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse" />
+                      <span className="text-[10px] font-mono tracking-widest text-zinc-500 uppercase font-semibold">// Sandbox Mode</span>
+                    </div>
+                    <p className="text-[11px] text-zinc-450 leading-relaxed">
+                      Instant entry to test LLM agent swarm planning, secure scripting, and web research using mock user assets.
+                    </p>
+                    <button
+                      onClick={handleMockLogin}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-bold rounded-xl text-xs transition"
+                    >
+                      <LogIn size={14} />
+                      Launch Sandbox Console
+                    </button>
+                  </div>
+
+                  <div className="relative flex py-2 items-center">
+                    <div className="flex-grow border-t border-zinc-900/60"></div>
+                    <span className="flex-shrink mx-4 text-[9px] font-mono text-zinc-600 uppercase tracking-widest">Or</span>
+                    <div className="flex-grow border-t border-zinc-900/60"></div>
+                  </div>
+
+                  {/* Google Login Button */}
                   <button
                     onClick={handleRealGoogleLogin}
-                    className="w-full flex items-center justify-center gap-2 py-3 bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-bold rounded-xl text-sm shadow-lg shadow-zinc-100/5 transition"
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-zinc-950 border border-zinc-850 hover:bg-zinc-900 text-zinc-300 font-semibold rounded-xl text-sm transition"
                   >
-                    <LogIn size={16} />
+                    <LogIn size={15} />
                     Sign In with Google
                   </button>
                 </div>
@@ -573,9 +599,12 @@ export default function App() {
       </div>
 
       {/* 2. Main Workspace (Console Dashboard - crossfades in when user logged in) */}
-      <div className={`absolute inset-0 flex transition-all duration-700 ease-in-out z-10 ${
-        user ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-105 pointer-events-none'
-      }`}>
+      <div 
+        style={{ transitionDuration: '1800ms', transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
+        className={`absolute inset-0 flex transition-all z-10 ${
+          user ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-103 blur-md pointer-events-none'
+        }`}
+      >
         {/* Searchable Sidebar */}
         <History onSelectSession={handleSelectSession} currentSessionId={currentSessionId} />
 

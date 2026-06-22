@@ -32,10 +32,20 @@ def decrypt_key(encrypted_key: str) -> str:
             detail=f"Decryption error: {e}"
         )
 
+# In-memory storage for developer sandbox keys to bypass Supabase foreign key constraint issues
+SANDBOX_KEYS = {}
+
 def save_user_keys(user_id: str, groq_key: str, tavily_key: str):
     """
     Encrypts the Groq and Tavily keys and upserts them in Supabase.
     """
+    if user_id == "11111111-1111-1111-1111-111111111111":
+        SANDBOX_KEYS[user_id] = {
+            "groq_key": groq_key,
+            "tavily_key": tavily_key
+        }
+        return
+
     enc_groq = encrypt_key(groq_key)
     enc_tavily = encrypt_key(tavily_key)
     
@@ -59,6 +69,9 @@ def get_user_keys(user_id: str) -> dict:
     """
     Fetches the encrypted keys for the user from Supabase and decrypts them.
     """
+    if user_id == "11111111-1111-1111-1111-111111111111":
+        return SANDBOX_KEYS.get(user_id, {"groq_key": "", "tavily_key": ""})
+
     if not supabase:
         # Development mock fallback
         return {"groq_key": "", "tavily_key": ""}
