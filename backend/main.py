@@ -17,9 +17,16 @@ from config import FRONTEND_URL
 app = FastAPI(title="OmniAgent API Server")
 
 # Add CORS configuration
+cors_origins = ["http://localhost:5173"]
+if FRONTEND_URL:
+    for origin in FRONTEND_URL.split(","):
+        trimmed = origin.strip()
+        if trimmed and trimmed not in cors_origins:
+            cors_origins.append(trimmed)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", FRONTEND_URL],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
