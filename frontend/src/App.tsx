@@ -125,18 +125,6 @@ export default function App() {
     setScrollProgress(pct)
   }
 
-  // Restore session token on load
-  useEffect(() => {
-    const token = getAccessToken()
-    if (token) {
-      setUser({
-        id: '11111111-1111-1111-1111-111111111111',
-        email: 'developer@example.com',
-        name: 'Developer Sandbox',
-        avatar_url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Developer'
-      })
-    }
-  }, [])
 
   // Google OAuth hash response processing
   useEffect(() => {
