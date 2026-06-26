@@ -22,21 +22,6 @@ def save_session(session_id: str, user_id: str, task: str, result: str, agents_u
     """
     timestamp = time.time()
     
-    # Save to Supabase DB if available
-    from config import supabase
-    is_mock = user_id == "11111111-1111-1111-1111-111111111111"
-    if supabase and not is_mock:
-        try:
-            supabase.table("sessions").upsert({
-                "id": session_id,
-                "user_id": user_id,
-                "task": task,
-                "result": result,
-                "agents_used": agents_used
-            }).execute()
-        except Exception as e:
-            print(f"[WARNING] Database sync failed: {e}")
-            
     # Add to ChromaDB
     collection.add(
         documents=[task],

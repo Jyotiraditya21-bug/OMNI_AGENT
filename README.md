@@ -67,37 +67,52 @@ The system is designed with a premium, low-contrast matte grey workspace that of
 
 ---
 
-## Product Capabilities
+## Developer Quick Start (Local Setup)
 
-OmniAgent acts as a unified hub that translates natural language tasks into automated execution sequences across multiple channels (Web, Chrome Extension, and REST API).
+OmniAgent is now configured as a fully self-contained, offline-first developer project. All external database (Supabase) requirements have been decoupled in favor of secure local file-based storage.
 
-### Orchestrator Node
-The core agent is powered by a central orchestrator utilizing LangGraph. It evaluates the user prompt, determines the execution path, and manages the state machine dynamically.
+### 1. Configure Environment Variables
+Create a `.env` file in the `backend/` folder (or copy `backend/.env.example` to `backend/.env`) and add the following credentials:
+```env
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+ENCRYPTION_SECRET=your_32_byte_base64_fernet_key
+JWT_SECRET=any_random_secure_jwt_secret_string
+```
 
-### Specialized Agent Swarm
-- **Research Node**: Automates online search using Tavily's search index to pull current context.
-- **Secure Code Sandbox**: Safely executes Python code blocks in an isolated subprocess environment with strict resource limits and timeouts.
-- **Web Scraper**: Extracts raw content, metadata, and OpenGraph tags from custom HTTP endpoints.
-- **Data Analyst**: Analyzes CSV datasets using Pandas and generates inline visualizations and charts.
-- **Integration Nodes**: Fully manages Google Workspace API calls (Gmail modify, Calendar scheduling, and Google Drive creations) based on the user request.
-
-### Memory and Key Management
-- **Semantic Vector Storage**: Leverages ChromaDB locally to embed session history, enabling semantic search and context retention across interactions.
-- **Symmetric Encryption Shield**: Implements a Bring Your Own Key (BYOK) paradigm. Groq and Tavily credentials are encrypted with Fernet before database writes and decrypted only in-memory during agent execution.
+### 2. Boot the Entire Workspace in 1 Command
+Simply run the bootstrapper script from the project root. This will verify/create the Python virtual environment, install npm dependencies, sync python packages, and run both dev servers:
+```bash
+./start.sh
+```
+- **Vite React Frontend:** [http://localhost:5173](http://localhost:5173)
+- **FastAPI Backend Server:** [http://localhost:8000](http://localhost:8000) (Logs piped to `backend/uvicorn.log`)
 
 ---
 
-## Technical Performance Optimization Metrics
+## Google Workspace Offline Authorization (One-time Setup)
 
-We re-engineered the front-end layout and deployment configuration to maximize performance, resulting in the following optimization metrics:
+To allow the Calendar, Gmail, and Google Drive agents to run locally without browser redirect URI limits, complete this one-time offline credentials setup:
 
-| Optimization Area | Before | After | Improvement / Outcome |
-| :--- | :--- | :--- | :--- |
-| **Frame Render Lag** | ~120ms delay | 0ms (Instant) | Smooth 60fps scroll matching |
-| **Scrollbar Translation** | Height-based layout recalculation | Hardware-accelerated 3D transform | Real-time position tracking |
-| **Swarm Execution Latency** | Sequential agent routing | LangGraph concurrent Send fanout | Up to 65% faster query execution |
-| **Time to First Byte (TTFB)** | ~180ms Vercel Cold Starts | <10ms Cloudflare Edge | Direct global CDN delivery |
-| **Credentials Protection** | Plaintext database records | Fernet Symmetric Encryption | Zero plaintext persistence |
+1. **Add Redirect URI:** In your Google Cloud Console Client ID settings, add `http://localhost:8080/` to your **Authorized redirect URIs**.
+2. **Enable APIs:** Enable these APIs in your Google Cloud Project:
+   - [Google Calendar API](https://console.cloud.google.com/apis/library/calendar-json.googleapis.com)
+   - [Gmail API](https://console.cloud.google.com/apis/library/gmail.googleapis.com)
+   - [Google Drive API](https://console.cloud.google.com/apis/library/drive.googleapis.com)
+3. **Run CLI Auth:** Execute the CLI authentication script locally:
+   ```bash
+   cd backend
+   .venv/bin/python google_auth.py
+   ```
+4. Complete the authorization prompts in the browser window that opens. This saves your credentials to `backend/token.json`.
+5. Launch the **Sandbox Console** on your site. The backend will silently load and refresh your credentials from the token file during execution!
+
+---
+
+## Local Storage Details
+
+- **Symmetric Encryption Shield:** Groove/Tavily keys entered in Settings are encrypted locally via Fernet and saved securely to `backend/keys.json`. No external database is ever used.
+- **Persistent Vector Memory:** Session history is embedded with SentenceTransformers and saved locally to `backend/chroma_db/`.
 
 ---
 

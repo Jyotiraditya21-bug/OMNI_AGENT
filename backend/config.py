@@ -1,14 +1,11 @@
 import os
 from dotenv import load_dotenv
-from supabase import create_client, Client
 from cryptography.fernet import Fernet
 
 # Load environment variables from .env file if it exists
 load_dotenv()
 
 # Configuration constants
-SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")
-SUPABASE_KEY: str = os.getenv("SUPABASE_KEY", "")
 GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
 ENCRYPTION_SECRET: str = os.getenv("ENCRYPTION_SECRET", "")
@@ -16,14 +13,6 @@ BACKEND_URL: str = os.getenv("BACKEND_URL", "http://localhost:8000")
 FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
 JWT_SECRET: str = os.getenv("JWT_SECRET", "super-secret-jwt-key-replace-in-production")
 ALGORITHM: str = "HS256"
-
-# Initialize Supabase Client
-supabase: Client = None
-if SUPABASE_URL and SUPABASE_KEY:
-    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-else:
-    # Print warning in stdout
-    print("[WARNING] Supabase environment variables are missing. Database integrations will fail.")
 
 def get_fernet() -> Fernet:
     """

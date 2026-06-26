@@ -179,6 +179,11 @@ export default function App() {
     setMessages(history)
   }
 
+  const handleNewChat = () => {
+    setCurrentSessionId(undefined)
+    setMessages([])
+  }
+
   const handleTaskSubmit = (task: string) => {
     run(task, googleToken)
   }
@@ -582,12 +587,24 @@ export default function App() {
         <div className="flex-1 flex flex-col h-full bg-zinc-900/10">
           {/* Workspace Toolbar */}
           <div className="flex items-center justify-between px-6 py-4 bg-zinc-950 border-b border-zinc-900">
-            <div className="flex items-center gap-2.5">
+            <div 
+              onClick={handleNewChat}
+              className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 active:scale-95 transition-all duration-150"
+              title="Return to Active Dashboard / New Session"
+            >
               <h1 className="text-sm font-bold tracking-widest text-zinc-200 uppercase font-mono">OMNIAGENT</h1>
               <span className="text-[9px] bg-zinc-900 border border-zinc-800/80 px-2 py-0.5 rounded text-zinc-500 font-semibold uppercase font-mono tracking-wider">// SWARM_CONSOLE_V0.4.0</span>
             </div>
 
             <div className="flex items-center gap-4">
+              {currentSessionId && (
+                <button
+                  onClick={handleNewChat}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-300 hover:text-zinc-100 bg-zinc-900 border border-zinc-850 hover:bg-zinc-800 rounded-lg transition"
+                >
+                  ← New Session
+                </button>
+              )}
               <button
                 onClick={() => setShowSettings(true)}
                 className="p-2 text-zinc-400 hover:text-zinc-200 bg-zinc-900 border border-zinc-850 hover:bg-zinc-800 rounded-lg transition"

@@ -21,3 +21,9 @@ frontend/dist/
 # macOS / OS files
 .DS_Store
 .vercel
+
+# Sensitive credentials & local logs
+backend/token.json
+backend/keys.json
+backend/uvicorn.log
+*.log

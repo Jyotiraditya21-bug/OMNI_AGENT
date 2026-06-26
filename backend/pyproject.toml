@@ -14,7 +14,6 @@ dependencies = [
     "tavily-python",
     "chromadb",
     "sentence-transformers",
-    "supabase",
     "cryptography",
     "httpx",
     "beautifulsoup4",
@@ -27,5 +26,6 @@ dependencies = [
     "sse-starlette",
     "python-dotenv",
     "typer",
-    "rich"
+    "rich",
+    "tabulate"
 ]

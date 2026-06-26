@@ -98,6 +98,16 @@ async def run(req: RunRequest, user_id: str = Depends(get_current_user)):
             detail="Groq API key is missing. Add it to your Settings first."
         )
 
+    google_token = req.google_token
+    if not google_token or (isinstance(google_token, str) and google_token.startswith("mock_developer_")):
+        try:
+            from google_auth import get_offline_google_token
+            offline_token = get_offline_google_token()
+            if offline_token:
+                google_token = offline_token
+        except Exception as e:
+            print(f"[WARNING] Failed to load offline google token: {e}")
+
     session_id = str(uuid.uuid4())
     queue = asyncio.Queue()
 
@@ -110,7 +120,7 @@ async def run(req: RunRequest, user_id: str = Depends(get_current_user)):
                 session_id=session_id,
                 groq_key=groq_key,
                 tavily_key=tavily_key,
-                google_token=req.google_token or "",
+                google_token=google_token or "",
                 queue=queue
             )
         )

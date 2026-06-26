@@ -5,7 +5,7 @@ from fastapi import Header, HTTPException, status
 from jose import jwt, JWTError
 from google.oauth2 import id_token
 from google.auth.transport import requests
-from config import GOOGLE_CLIENT_ID, JWT_SECRET, ALGORITHM, supabase
+from config import GOOGLE_CLIENT_ID, JWT_SECRET, ALGORITHM
 
 def verify_google_token(token: str) -> dict:
     """
@@ -67,42 +67,15 @@ def verify_google_token(token: str) -> dict:
 
 def get_or_create_user(user_info: dict) -> dict:
     """
-    Upserts user info into Supabase users table based on google_id.
+    Returns user details using a local static developer ID, bypassing Supabase.
     """
-    # If the user is a mock developer, bypass Supabase synchronization to make sandbox robust
-    is_mock = user_info["google_id"].startswith("google_mock_") or user_info["google_id"] == "google_developer_id"
-    if is_mock or not supabase:
-        # Development / Sandbox fallback
-        return {
-            "id": "11111111-1111-1111-1111-111111111111",
-            "google_id": user_info["google_id"],
-            "email": user_info["email"],
-            "name": user_info["name"],
-            "avatar_url": user_info["avatar_url"]
-        }
-        
-    try:
-        # Query if the user exists
-        res = supabase.table("users").select("*").eq("google_id", user_info["google_id"]).execute()
-        if res.data and len(res.data) > 0:
-            return res.data[0]
-            
-        # Create user if it does not exist
-        insert_res = supabase.table("users").insert({
-            "google_id": user_info["google_id"],
-            "email": user_info["email"],
-            "name": user_info["name"],
-            "avatar_url": user_info["avatar_url"]
-        }).execute()
-        
-        if insert_res.data and len(insert_res.data) > 0:
-            return insert_res.data[0]
-        raise ValueError("Insert operation failed to return data.")
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to synchronize user record: {e}"
-        )
+    return {
+        "id": "11111111-1111-1111-1111-111111111111",
+        "google_id": user_info["google_id"],
+        "email": user_info["email"],
+        "name": user_info["name"],
+        "avatar_url": user_info["avatar_url"]
+    }
 
 def create_session_token(user_id: str) -> str:
     """

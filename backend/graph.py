@@ -69,6 +69,7 @@ Schema:
 Rules:
 - Only assign to agents that are actually needed.
 - If google_token is empty, avoid assigning Google Workspace agents (email, calendar, file) unless absolutely necessary, or warn that a Google login is required.
+- CRITICAL: When writing the subtask description for an agent, you MUST preserve all specific user variables/details (such as recipient email addresses, contact names, event times/dates, URLs, filenames, and numeric values). Do NOT omit them. For example, if the user specifies sending an email to "xyz@example.com", the "email" agent's subtask description MUST explicitly contain "xyz@example.com".
 """
     response = await llm.ainvoke([HumanMessage(content=prompt)])
     content = re.sub(r"```json|```", "", response.content).strip()
@@ -108,17 +109,17 @@ async def code_node(state: dict):
     return {"agent_results": {"code": res}}
 
 async def email_node(state: dict):
-    from agents.email_agent import run_email_agent
+    from agents.google_agents import run_email_agent
     res = await run_email_agent(state["current_subtask"], state["groq_key"], state["google_token"], state["queue"])
     return {"agent_results": {"email": res}}
 
 async def calendar_node(state: dict):
-    from agents.calendar_agent import run_calendar_agent
+    from agents.google_agents import run_calendar_agent
     res = await run_calendar_agent(state["current_subtask"], state["groq_key"], state["google_token"], state["queue"])
     return {"agent_results": {"calendar": res}}
 
 async def file_node(state: dict):
-    from agents.file_agent import run_file_agent
+    from agents.google_agents import run_file_agent
     res = await run_file_agent(state["current_subtask"], state["groq_key"], state["google_token"], state["queue"])
     return {"agent_results": {"file": res}}
 
@@ -180,8 +181,15 @@ Initial User Task: {state['task']}
 Sub-Agent Results:
 {results_str}
 
-Format the final response nicely in markdown. 
-Make sure you retain all URLs, data tables, and embedded chart figures (base64 img markdown elements) outputted by the sub-agents!
+Formatting Rules:
+1. Be extremely concise, readable, and executive-ready. Avoid wordy introductions (e.g. "Here is the synthesized response...") or recapping which agent did what task unless requested.
+2. Structure the response using clean subheadings, bullet points, and key-value pairings.
+3. HIDE long logs, raw code structures, or extensive tables inside clean HTML details tabs:
+   <details>
+     <summary>Click to view raw code / raw details</summary>
+     [detailed text here]
+   </details>
+4. CRITICAL: You MUST retain all URLs, data tables, and visual chart base64 image markdown tags (`![Data Chart](data:image/png;base64,...)`) exactly as output by the sub-agents!
 """
     response = await llm.ainvoke([HumanMessage(content=prompt)])
     
