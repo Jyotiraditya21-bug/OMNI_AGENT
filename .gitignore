@@ -27,3 +27,9 @@ backend/token.json
 backend/keys.json
 backend/uvicorn.log
 *.log
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
