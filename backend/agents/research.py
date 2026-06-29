@@ -1,6 +1,6 @@
 import asyncio
 from langchain_groq import ChatGroq
-from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_tavily import TavilySearch
 from langgraph.prebuilt import create_react_agent
 
 async def run_research_agent(subtask: str, groq_key: str, tavily_key: str, queue: asyncio.Queue) -> str:
@@ -25,7 +25,7 @@ async def run_research_agent(subtask: str, groq_key: str, tavily_key: str, queue
         )
         
         # Initialize Tavily search tool
-        search_tool = TavilySearchResults(
+        search_tool = TavilySearch(
             tavily_api_key=tavily_key,
             max_results=5
         )

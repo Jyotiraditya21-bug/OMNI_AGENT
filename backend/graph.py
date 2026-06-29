@@ -28,6 +28,7 @@ class AgentState(TypedDict):
     tavily_key: str
     google_token: str
     queue: any  # asyncio.Queue
+    pending_agents: list[str]
 
 # 1. Task Decomposition Node
 async def decompose_node(state: AgentState):
@@ -94,65 +95,74 @@ Rules:
     
     return {
         "subtasks": subtasks,
-        "agent_assignments": assignments
+        "agent_assignments": assignments,
+        "pending_agents": list(assignments.keys())
     }
 
-# 2. Worker Parallel Sub-agent Nodes
+# Helper to inject context from previous agents
+def get_context_subtask(state: dict, agent_name: str) -> str:
+    subtask = state.get("agent_assignments", {}).get(agent_name, "")
+    results = state.get("agent_results", {})
+    if results:
+        context = "Context from previous agents:\n"
+        for k, v in results.items():
+            context += f"--- {k.upper()} ---\n{v}\n\n"
+        subtask = f"{context}\nNow complete this subtask:\n{subtask}"
+    return subtask
+
+def update_pending(state: dict, agent_name: str) -> list[str]:
+    pending = state.get("pending_agents", [])
+    return [a for a in pending if a != agent_name]
+
+# 2. Worker Sequential Sub-agent Nodes
 async def research_node(state: dict):
     from agents.research import run_research_agent
-    res = await run_research_agent(state["current_subtask"], state["groq_key"], state["tavily_key"], state["queue"])
-    return {"agent_results": {"research": res}}
+    subtask = get_context_subtask(state, "research")
+    res = await run_research_agent(subtask, state["groq_key"], state["tavily_key"], state["queue"])
+    return {"agent_results": {"research": res}, "pending_agents": update_pending(state, "research")}
 
 async def code_node(state: dict):
     from agents.code import run_code_agent
-    res = await run_code_agent(state["current_subtask"], state["groq_key"], state["queue"])
-    return {"agent_results": {"code": res}}
+    subtask = get_context_subtask(state, "code")
+    res = await run_code_agent(subtask, state["groq_key"], state["queue"])
+    return {"agent_results": {"code": res}, "pending_agents": update_pending(state, "code")}
 
 async def email_node(state: dict):
     from agents.google_agents import run_email_agent
-    res = await run_email_agent(state["current_subtask"], state["groq_key"], state["google_token"], state["queue"])
-    return {"agent_results": {"email": res}}
+    subtask = get_context_subtask(state, "email")
+    res = await run_email_agent(subtask, state["groq_key"], state["google_token"], state["queue"])
+    return {"agent_results": {"email": res}, "pending_agents": update_pending(state, "email")}
 
 async def calendar_node(state: dict):
     from agents.google_agents import run_calendar_agent
-    res = await run_calendar_agent(state["current_subtask"], state["groq_key"], state["google_token"], state["queue"])
-    return {"agent_results": {"calendar": res}}
+    subtask = get_context_subtask(state, "calendar")
+    res = await run_calendar_agent(subtask, state["groq_key"], state["google_token"], state["queue"])
+    return {"agent_results": {"calendar": res}, "pending_agents": update_pending(state, "calendar")}
 
 async def file_node(state: dict):
     from agents.google_agents import run_file_agent
-    res = await run_file_agent(state["current_subtask"], state["groq_key"], state["google_token"], state["queue"])
-    return {"agent_results": {"file": res}}
+    subtask = get_context_subtask(state, "file")
+    res = await run_file_agent(subtask, state["groq_key"], state["google_token"], state["queue"])
+    return {"agent_results": {"file": res}, "pending_agents": update_pending(state, "file")}
 
 async def data_node(state: dict):
     from agents.data_agent import run_data_agent
-    res = await run_data_agent(state["current_subtask"], state["groq_key"], state["queue"])
-    return {"agent_results": {"data": res}}
+    subtask = get_context_subtask(state, "data")
+    res = await run_data_agent(subtask, state["groq_key"], state["queue"])
+    return {"agent_results": {"data": res}, "pending_agents": update_pending(state, "data")}
 
 async def scraper_node(state: dict):
     from agents.scraper import run_scraper_agent
-    res = await run_scraper_agent(state["current_subtask"], state["groq_key"], state["queue"])
-    return {"agent_results": {"scraper": res}}
+    subtask = get_context_subtask(state, "scraper")
+    res = await run_scraper_agent(subtask, state["groq_key"], state["queue"])
+    return {"agent_results": {"scraper": res}, "pending_agents": update_pending(state, "scraper")}
 
-# 3. Router logic for parallel execution via Send API
+# 3. Router logic for sequential execution
 def route_agents(state: AgentState):
-    sends = []
-    assignments = state.get("agent_assignments", {})
-    
-    for agent_name, subtask in assignments.items():
-        node_name = f"{agent_name}_node"
-        payload = {
-            "task": state["task"],
-            "groq_key": state["groq_key"],
-            "tavily_key": state["tavily_key"],
-            "google_token": state["google_token"],
-            "queue": state["queue"],
-            "subtasks": state["subtasks"],
-            "agent_assignments": state["agent_assignments"],
-            "current_subtask": subtask
-        }
-        sends.append(Send(node_name, payload))
-        
-    return sends
+    pending = state.get("pending_agents", [])
+    if not pending:
+        return "synthesize_node"
+    return f"{pending[0]}_node"
 
 # 4. Result Synthesis Node
 async def synthesize_node(state: AgentState):
@@ -217,20 +227,22 @@ workflow.add_node("synthesize_node", synthesize_node)
 # Set up routing flow
 workflow.add_edge(START, "decompose_node")
 
+# List of all possible next nodes
+route_nodes = ["research_node", "code_node", "email_node", "calendar_node", "file_node", "data_node", "scraper_node", "synthesize_node"]
+
 workflow.add_conditional_edges(
     "decompose_node",
     route_agents,
-    ["research_node", "code_node", "email_node", "calendar_node", "file_node", "data_node", "scraper_node"]
+    route_nodes
 )
 
-# Connect parallel branches to joining synthesis node
-workflow.add_edge("research_node", "synthesize_node")
-workflow.add_edge("code_node", "synthesize_node")
-workflow.add_edge("email_node", "synthesize_node")
-workflow.add_edge("calendar_node", "synthesize_node")
-workflow.add_edge("file_node", "synthesize_node")
-workflow.add_edge("data_node", "synthesize_node")
-workflow.add_edge("scraper_node", "synthesize_node")
+# Connect all agent nodes back to the router to allow sequential execution
+for node_name in ["research_node", "code_node", "email_node", "calendar_node", "file_node", "data_node", "scraper_node"]:
+    workflow.add_conditional_edges(
+        node_name,
+        route_agents,
+        route_nodes
+    )
 
 workflow.add_edge("synthesize_node", END)
 
@@ -260,7 +272,8 @@ async def run_graph(
         "groq_key": groq_key,
         "tavily_key": tavily_key,
         "google_token": google_token,
-        "queue": queue
+        "queue": queue,
+        "pending_agents": []
     }
     result = await app_graph.ainvoke(initial_state)
     return result.get("final_response", "")
