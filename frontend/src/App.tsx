@@ -136,23 +136,18 @@ export default function App() {
       
       const targetToken = accessToken || idToken
       if (targetToken) {
-        const backendToken = getAccessToken()
-        if (backendToken) {
-          handleSetGoogleToken(targetToken)
-          window.location.hash = ''
-        } else {
-          loginWithGoogle(targetToken)
-            .then((res) => {
-              setUser(res.user)
-              handleSetGoogleToken(targetToken)
-              window.location.hash = ''
-            })
-            .catch((err) => {
-              console.error('Google authorization synchronization failed, falling back to Sandbox Mode:', err)
-              handleMockLogin()
-              window.location.hash = ''
-            })
-        }
+        // Always verify with backend to get the user object and a fresh session token
+        loginWithGoogle(targetToken)
+          .then((res) => {
+            setUser(res.user)
+            handleSetGoogleToken(targetToken)
+            window.location.hash = ''
+          })
+          .catch((err) => {
+            console.error('Google authorization synchronization failed, falling back to Sandbox Mode:', err)
+            handleMockLogin()
+            window.location.hash = ''
+          })
       }
     }
   }, [])

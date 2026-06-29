@@ -23,13 +23,10 @@ def load_keys_file() -> dict:
         return {}
 
 def save_keys_file(data: dict):
-    try:
-        fernet = get_fernet()
-        encrypted = fernet.encrypt(json.dumps(data).encode()).decode()
-        with open(KEYS_FILE, "w") as f:
-            f.write(encrypted)
-    except Exception as e:
-        print(f"[ERROR] Failed to save keys.json: {e}")
+    fernet = get_fernet()
+    encrypted = fernet.encrypt(json.dumps(data).encode()).decode()
+    with open(KEYS_FILE, "w") as f:
+        f.write(encrypted)
 
 # Pre-populated developer sandbox keys from environment variables
 SANDBOX_KEYS_PRESET = {

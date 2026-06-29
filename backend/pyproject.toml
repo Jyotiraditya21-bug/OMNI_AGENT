@@ -27,5 +27,6 @@ dependencies = [
     "python-dotenv",
     "typer",
     "rich",
-    "tabulate"
+    "tabulate",
+    "langchain-tavily>=0.2.18",
 ]
