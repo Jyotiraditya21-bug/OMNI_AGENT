@@ -26,7 +26,7 @@ export function Chat({ messages, isLoading, onSubmit }: ChatProps) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-zinc-900/40 border-x border-zinc-900 flex-1">
+    <div className="flex flex-col min-h-0 bg-zinc-900/40 border-x border-zinc-900 flex-1">
       {/* Chat Title Panel */}
       <div className="flex items-center justify-between px-6 py-4 bg-zinc-950 border-b border-zinc-900">
         <div className="flex items-center gap-2">
