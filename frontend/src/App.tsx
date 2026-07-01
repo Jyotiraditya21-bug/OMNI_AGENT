@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Settings as SettingsIcon, LogIn } from 'lucide-react'
 import { User, Session, Message } from './types'
-import { getAccessToken, clearAccessToken, loginWithGoogle } from './lib/api'
+import { clearAccessToken, loginWithGoogle } from './lib/api'
 import { History } from './components/History'
 import { Chat } from './components/Chat'
 import { AgentPanel } from './components/AgentPanel'
@@ -9,7 +9,14 @@ import { Settings } from './components/Settings'
 import { useSSE } from './hooks/useSSE'
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('omniagent_user')
+    try {
+      return saved ? JSON.parse(saved) : null
+    } catch {
+      return null
+    }
+  })
   const [showSettings, setShowSettings] = useState(false)
   const [currentSessionId, setCurrentSessionId] = useState<string | undefined>()
   const [googleToken, setGoogleToken] = useState<string>(() => {
@@ -31,6 +38,14 @@ export default function App() {
       localStorage.removeItem('omniagent_google_token')
     }
   }
+
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('omniagent_user', JSON.stringify(user))
+    } else {
+      localStorage.removeItem('omniagent_user')
+    }
+  }, [user])
 
   async function handleMockLogin() {
     if (isBooting) return
