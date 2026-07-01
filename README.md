@@ -72,13 +72,27 @@ The system is designed with a premium, low-contrast matte grey workspace that of
 OmniAgent is now configured as a fully self-contained, offline-first developer project. All external database (Supabase) requirements have been decoupled in favor of secure local file-based storage.
 
 ### 1. Configure Environment Variables
-Create a `.env` file in the `backend/` folder (or copy `backend/.env.example` to `backend/.env`) and add the following credentials:
+
+**Backend:**
+Create a `.env` file in the `backend/` folder (or copy `backend/.env.example` to `backend/.env`) and configure the following credentials:
 ```env
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 ENCRYPTION_SECRET=your_32_byte_base64_fernet_key
 JWT_SECRET=any_random_secure_jwt_secret_string
+
+# Optional presets for developer sandbox:
+GROQ_API_KEY=your_groq_api_key
+TAVILY_API_KEY=your_tavily_api_key
 ```
+
+**Frontend:**
+Create a `.env` file in the `frontend/` folder (or copy `frontend/.env.example` to `frontend/.env`):
+```env
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
+VITE_BACKEND_URL=http://localhost:8000
+```
+
 
 ### 2. Boot the Entire Workspace in 1 Command
 Simply run the bootstrapper script from the project root. This will verify/create the Python virtual environment, install npm dependencies, sync python packages, and run both dev servers:
