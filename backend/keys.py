@@ -73,7 +73,10 @@ def get_user_keys(user_id: str) -> dict:
 def mask_key(key: str) -> str:
     """
     Returns the first 4 characters of a key followed by '••••••••' for secure client rendering.
+    For keys with 4 or fewer characters, returns a fully masked string to avoid revealing credentials.
     """
     if not key:
         return ""
+    if len(key) <= 4:
+        return "••••••••"
     return key[:4] + "••••••••"
