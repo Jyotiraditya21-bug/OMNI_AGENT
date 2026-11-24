@@ -81,6 +81,7 @@ Include explanations and details.
                             
                     except asyncio.TimeoutError:
                         process.kill()
+                        await process.wait()
                         execution_output = "\n\n### Code Execution Output\n**Error:** Code execution timed out after 10.0 seconds.\n"
                 except Exception as run_err:
                     execution_output = f"\n\n### Code Execution Output\n**Error:** Failed to execute script: {run_err}\n"
